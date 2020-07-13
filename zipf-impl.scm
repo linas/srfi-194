@@ -56,22 +56,27 @@
 
 	; The hat function h(x) = 1/(x^s) 
 	(define (hat x) 
-		(expt x (- s))
+		(expt (+ x q) (- s))
 	)
+
+	(define 1ms (- 1 s))
+	(define logq (log (+ 1 q)))
+	(define big-hq (* logq (expxm1bx (* 1ms logq))))
 
 	; The integral of hat(x)
 	; H(x) = log(x) if s == 1, (x^(1-s) - 1)/(1 - s) otherwise.
 	; Note the numerator is one less than in the paper order to
 	; work with all positive s.
 	(define (big-h x)
-		(define logx (log x))
-		(* (expxm1bx (* (- 1 s) logx)) logx)
+		(define logx (log (+ x q)))
+		(- (* (expxm1bx (* 1ms logx)) logx) big-hq)
 	)
 
 	; The inverse function of H(x)
-	(define (big-h-inv x)
-		(define t (max -1 (* x (- 1 s))))
-		(exp (* x (log1pxbx t)))
+	(define (big-h-inv y)
+		(define t (+ y big-hq))
+		(define u (* t 1ms))
+		(- (exp (* t (log1pxbx u))) q)
 	)
 
 	; Clamp x to [lo, hi].
