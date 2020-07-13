@@ -49,7 +49,7 @@
 	; As before, uses the epsilon to work around the missing high-precision
 	; log(1+x) function. Bummer.
 	(define (log1pxbx x)
-		(if (< epsilon x)
+		(if (< epsilon (abs x))
 			(/ (log (+ 1 x)) x)
 			(- 1 (* x (- (/ 1 2) (* x (- (/ 1 3) (* x (/ 1 4))))))))
 	)
@@ -69,7 +69,7 @@
 	; work with all positive s.
 	(define (big-h x)
 		(define logx (log (+ x q)))
-		(- (* (expxm1bx (* 1ms logx)) logx) big-hq)
+		(- (* logx (expxm1bx (* 1ms logx))) big-hq)
 	)
 
 	; The inverse function of H(x)
@@ -84,7 +84,10 @@
 		(max lo (min x hi))
 	)
 
-	(define big-h-x1 (- (big-h 1.5) 1))
+	; For zero q, have a 4x performance improvement by offsetting.
+	(define big-h-x1
+		(if (< 0.1 (abs q)) (big-h 0.5) (- (big-h 1.5) 1)))
+
 	(define big-h-n (big-h (+ n 0.5)))
 
 	(define dist (make-random-real-generator big-h-x1 big-h-n))
