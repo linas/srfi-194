@@ -35,7 +35,7 @@
 	; common elementary functions (that I know of, at any rate).
 	(define epsilon 2.0e-5)
 
-	; (exp(x) - 1) / x 
+	; (exp(x) - 1) / x
 	; This partly works around the issue of scheme not having a native
 	; high-precision exp(x)-1 function that is accurate for small x.
 	; (that I know of). Uses the epsilon above.
@@ -45,7 +45,7 @@
 			(+ 1 (* (/ x 2) (+ 1 (* (/ x 3) (+ 1 (/ x 4)))))))
 	)
 
-	; log(1 + x) / x 
+	; log(1 + x) / x
 	; As before, uses the epsilon to work around the missing high-precision
 	; log(1+x) function. Bummer.
 	(define (log1pxbx x)
@@ -54,8 +54,8 @@
 			(- 1 (* x (- (/ 1 2) (* x (- (/ 1 3) (* x (/ 1 4))))))))
 	)
 
-	; The hat function h(x) = 1/(x^s) 
-	(define (hat x) 
+	; The hat function h(x) = 1/(x^s)
+	(define (hat x)
 		(expt (+ x q) (- s))
 	)
 
@@ -64,7 +64,9 @@
 	(define big-hq (* logq (expxm1bx (* 1ms logq))))
 
 	; The integral of hat(x)
-	; H(x) = log(x) if s == 1, (x^(1-s) - 1)/(1 - s) otherwise.
+	;    H(x) = [(x+q)^(1-s) - (1+q)^(1-s)] / (1-s)
+	; and if s==1 then
+	;    H(x) = log(x+q) - log(1+q)
 	; Note the numerator is one less than in the paper order to
 	; work with all positive s.
 	(define (big-h x)
@@ -73,6 +75,8 @@
 	)
 
 	; The inverse function of H(x)
+	;   H^{-1}(y) = [(1-s)y + (1+q)^{1-s}]^{1/(1-s)} - q
+	;
 	(define (big-h-inv y)
 		(define t (+ y big-hq))
 		(define u (* t 1ms))
