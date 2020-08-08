@@ -86,5 +86,22 @@
 			lst)
 		(close outport)))
 
-(list-to-file dists "dists.csv")
+(list-to-file dists "dists.dat")
 
+; Compute average of a list of numbers
+(define (avg lst)
+	(/ (fold (lambda (x sum) (+ sum x)) 0 lst) (length lst)))
+
+; samples
+(avg dists) ; 6.283012635109339e-4
+(avg (take dists 300))  ; 6.667184236324033e-4
+(avg (take (drop dists 300) 300)) ; 5.841017658792995e-4
+
+; Compute moving average
+(define (moving-avg lst window)
+	(map (lambda (offset) (avg (take (drop lst offset) window)))
+		(iota (- (length lst) window))))
+
+(define moving-300 (moving-avg dists 300))
+
+(list-to-file moving-300 "moving.dat")
