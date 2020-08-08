@@ -58,4 +58,17 @@
 
 (equal? (clockwise clock) clock)
 
+; Place the point sample into order
 (define ordered-points (clockwise points))
+
+(define (vector-diff a b)
+	(vector-map (lambda (idx ea eb) (- ea eb)) a b))
+
+(vector-diff '#( 2 3) '#(0.5 0.7))
+
+; Compute differences between neighbor points
+(define (delta pts rv)
+	(if (null? (cdr pts)) (reverse! rv)
+		(delta (cdr pts) (cons (l2-norm (vector-diff (car pts) (cadr pts))) rv))))
+
+(define diffs (delta ordered-points '()))
