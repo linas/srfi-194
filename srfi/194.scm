@@ -1,15 +1,16 @@
-(define-library (srfi 194)
-  (import (scheme base)
-          (scheme case-lambda)
-          (scheme inexact)
-          (scheme complex)
-          (scheme write)
-          (srfi 27)
-          (srfi 133))
+; (define-library (srfi 194)
+;  (import  (scheme base)
+;          (scheme case-lambda)
+;          (scheme inexact)
+;          (scheme complex)
+;          (scheme write)
+;          (srfi 27)
+;          (srfi 133)
+;)
 
-  (cond-expand
-    ((library (srfi 158)) (import (srfi 158)))
-    ((library (srfi 121)) (import (srfi 121))))
+;  (cond-expand
+;    ((library (srfi 158)) (import (srfi 158)))
+;    ((library (srfi 121)) (import (srfi 121))))
 
   (export
 
@@ -46,4 +47,5 @@
 
   (include "srfi-194-impl.scm")
   (include "zipf-zri.scm")
-  (include "sphere.scm"))
+  (include "sphere.scm")
+;)
