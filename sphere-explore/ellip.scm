@@ -13,20 +13,25 @@
 
 
 ; Sample ellipse
-(define dim-sizes '#(10 2))
+(define axes '#(10 2))
 
   ;;This is what it should be doing....
   (define gaussg-vec
 	 (vector-map
 		(lambda (i size)
 		  (make-normal-generator 0.0 size))
-		dim-sizes))
+		axes))
 
 	; Handy-dandy utility
-  (define (l2-norm VEC)
+  (define (ellipse-norm VEC AXES)
 	 (sqrt (vector-fold
 				(lambda (idx sum x l) (+ sum (/ (* x x) (* l l))))
-				0 VEC dim-sizes)))
+				0 VEC AXES)))
+
+  (define (l2-norm VEC)
+	 (sqrt (vector-fold
+				(lambda (idx sum x) (+ sum (* x x)))
+				0 VEC)))
 
 
 ; Lets do it...
@@ -34,10 +39,10 @@
 
 (define points (map (lambda (x) (g)) (iota 10000)))
 
-(map l2-norm points)
+(map ellipse-norm points axes)
 
 ; Verify they sit on the surface
-(fold (lambda (p sum) (+ sum (abs (- 1 (l2-norm p))))) 0 points)
+(fold (lambda (p sum) (+ sum (abs (- 1 (ellipse-norm p axes))))) 0 points)
 
 ; Sort into clockwise order. Only for 2D ellipsoids...
 (define (clockwise pts)
@@ -83,8 +88,43 @@
 (define (avg lst) (/ (sum lst) (length lst)))
 
 (define pi 3.14159265358979)
-; Expect this to be 1.0
-(define perimeter (/ (sum dists) (* 2 pi)))
+
+; Pseudo-perimeter -- expect this to be 2pi
+(define circu (sum (map (lambda (d) (ellipse-norm d axes)) diffs)))
+
+; factorial
+(define (fact n rv)
+	(if (zero? n) rv (fact (- n 1) (* n rv))))
+
+; Double factorial
+; https://en.wikipedia.org/wiki/Double_factorial
+(define (double-fact n rv)
+	(if (<= n 0) rv (double-fact (- n 2) (* n rv))))
+
+; Complete elliptic integral per wikipedia, see the Ivorty& Bessel
+; expansion. Here `a` and `b` are the axes.
+; https://en.wikipedia.org/wiki/Ellipse
+(define (complete-elliptic a b)
+	(define rh (/ (- a b) (+ a b)))
+	(define h (* rh rh))
+
+	(define (ivory term n twon hn fact-n dfact-n sum)
+		(if (< term 1e-10) (+ sum term)
+			; (format #t "yo n= ~A term=~A 2^n=~A h^n=~A n!=~A n!!=~A sum=~A\n"
+			; n term twon hn fact-n dfact-n sum)
+			(ivory
+				(/ (* dfact-n dfact-n hn) (* twon twon fact-n fact-n))
+				(+ n 1)
+				(* 2 twon)
+				(* h hn)
+				(* (+ n 1) fact-n)
+				(* (- (* 2 n) 1) dfact-n)
+				(+ term sum))))
+
+	(* pi (+ a b) (+ 1 (/ h 4)
+		(ivory (/ (* h h) 64) 3 8 (* h h h) 6 3 0.0))))
+
+(define perimeter (sum dists))
 
 ; Debug utility for gnuplot graphing.
 ; You can use this to dump a list to a tab-delimited file.
