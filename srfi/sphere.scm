@@ -46,6 +46,34 @@
                   (* x norm))
                 vect)))
 
+(define (make-sphere-bork* dim-sizes)
+  (define gaussg-vec
+    (vector-map
+      (lambda (idx size)
+        (make-normal-generator 0.0 (sqrt size)))
+      dim-sizes))
+  ; Banach l2-norm aka root-mean-square distance.
+  (define (l2-norm VEC)
+    (sqrt (vector-fold
+            (lambda (idx sum x l)
+              (+ sum (/ (* x x)
+                        (* l l)
+                        )))
+            0
+            VEC
+            dim-sizes)))
+
+  (lambda ()
+    (define vect
+      (vector-map
+        (lambda (idx gaussg)
+          (gaussg))
+        gaussg-vec))
+    (define norm (/ 1.0 (l2-norm vect)))
+    (vector-map (lambda (idx x)
+                  (* x norm))
+                vect)))
+
 ; make-ball-generator N - return a generator of points uniformly
 ; distributed inside an N-dimensional ball.
 ; This implements the Harman-Lacko-Voelker Dropped Coordinate method.

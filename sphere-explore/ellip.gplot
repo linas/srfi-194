@@ -11,3 +11,6 @@ set term png size 1024,768
 set out 'moving.png'
 plot "moving.dat" using 1:2 with lines
 
+set out 'bork.png'
+plot "bork.dat" using 1:2 with lines
+
