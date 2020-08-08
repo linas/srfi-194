@@ -1,0 +1,9 @@
+
+set term png size 1024,768
+
+# set yrange [0.88: 1.12]
+# set logscale y
+# set logscale x
+
+set out 'dists.png'
+plot "dists.dat" using 1:2 with points

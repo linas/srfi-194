@@ -8,24 +8,24 @@
 (define (make-normal-generator center width)
 	(lambda () (+ center (* width (random:normal)))))
 
-; (load "../srfi/sphere.scm")
+(load "../srfi/sphere.scm")
 
   (define dim-sizes '#(10 2))
   (define gaussg-vec
-    (vector-map
-      (lambda (i size)
-        (make-normal-generator 0.0 size))
-      dim-sizes))
+	 (vector-map
+		(lambda (i size)
+		  (make-normal-generator 0.0 size))
+		dim-sizes))
 
   (define (l2-norm VEC)
-    (sqrt (vector-fold
-            (lambda (idx sum x l)
-              (+ sum (/ (* x x)
-                        (* l l)
-                        )))
-            0
-            VEC
-            dim-sizes)))
+	 (sqrt (vector-fold
+				(lambda (idx sum x l)
+				  (+ sum (/ (* x x)
+								(* l l)
+								)))
+				0
+				VEC
+				dim-sizes)))
 
 
 (define g (make-sphere-generator* '#(10 2)))
@@ -69,6 +69,22 @@
 ; Compute differences between neighbor points
 (define (delta pts rv)
 	(if (null? (cdr pts)) (reverse! rv)
-		(delta (cdr pts) (cons (l2-norm (vector-diff (car pts) (cadr pts))) rv))))
+		(delta (cdr pts) (cons (vector-diff (car pts) (cadr pts)) rv))))
 
 (define diffs (delta ordered-points '()))
+
+; Compute the distances between neighboring points
+(define dists (map l2-norm diffs))
+
+; Debug utility for gnuplot graphing.
+; You can use this to dump a list to a tab-delimited file.
+(define (list-to-file lst filename)
+	(let ((outport (open-file filename "w")))
+		(fold
+			(lambda (x i) (format outport "~A	~A\n" i x) (+ i 1))
+			1
+			lst)
+		(close outport)))
+
+(list-to-file dists "dists.csv")
+
