@@ -1,0 +1,72 @@
+
+set term png size 1024,768
+set out 'foo.png'
+
+# set yrange [0.88: 1.12]
+# set logscale y
+# set logscale x
+
+# for q=3 n=30
+norm=1/1.201519557594767
+
+# for q=2 n=30
+norm=1/1.6121501176015975
+
+# for q=1.1 n=30
+norm = 1/3.4793863876862785
+
+# for q=1.1 n=300
+norm = 1/4.932274369265269
+
+# for q=1.1 n=3000
+norm = 1/6.094093881542116
+
+# for q=2 n=3000
+norm = 1/1.6446007890642758
+
+# for q=2 n=30
+norm=1/1.6121501176015975
+
+# for q=1 n=100
+norm = 1/5.187377517639621
+
+# for q=1 n=30
+norm = 1/3.994987130920391
+
+# for q=1 n=3000
+norm = 1/8.583749889959186
+
+# for q=1.5 n=100
+norm = 1/2.412874098703719
+
+# for q=2 n=100
+norm = 1/1.634983900184893
+
+# for q=3 n=100
+norm = 1/1.2020074006596777
+
+# for q=1 n=100
+norm = 1/5.187377517639621
+
+# for q=0.8 n=100
+norm = 1/8.13443642804101
+
+# for q=0.3 n=100
+norm = 1/35.10506414618194
+
+set style data linespoints
+
+set out 'baz.png'
+plot "baz.dat" using 1:($2 ) with linespoints
+# plot "baz.dat" using 1:($2 * $1) with linespoints
+
+#plot "foo.dat" using 1:2 with linespoints, \
+#     "bar.dat" using 1:2 with lines
+#    "foo.dat" using 1:(norm / ($1)**0.3)
+
+set out 'foo.png'
+set logscale y
+set logscale x
+plot "foo.dat" using 1:2 with linespoints, \
+     "bar.dat" using 1:2 with lines
+
