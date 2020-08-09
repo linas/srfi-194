@@ -124,7 +124,16 @@
 	(* pi (+ a b) (+ 1 (/ h 4)
 		(ivory (/ (* h h) 64) 3 8 (* h h h) 6 3 0.0))))
 
+; Sum of the intervals
 (define perimeter (sum dists))
+
+; Should equal the complete integral.
+(define perim-exact
+	(complete-elliptic (vector-ref axes 0) (vector-ref axes 1)))
+
+; Should be less than one
+(abs (* (/ (- perimeter perim-exact) perim-exact) (length points)))
+
 
 ; Debug utility for gnuplot graphing.
 ; You can use this to dump a list to a tab-delimited file.
@@ -137,7 +146,6 @@
 		(close outport)))
 
 (list-to-file dists "dists.dat")
-
 
 ; samples
 (avg dists) ; 6.283012635109339e-4 == 2pi / num-points
