@@ -47,13 +47,94 @@
                 vect)))
 
 (define (make-sphere-bork* dim-sizes)
+  ; Banach l2-norm aka root-mean-square distance.
+  (define (l2-norm VEC)
+    (sqrt (vector-fold
+            (lambda (idx sum x) (+ sum (* x x)))
+            0
+            VEC)))
   (define gaussg-vec
     (vector-map
       (lambda (idx size)
-        (make-normal-generator 0.0 (sqrt size)))
+        (make-normal-generator 0.0 size ))
       dim-sizes))
+
+  ; Distance to ellipse.
+  (define (ellipse-norm VEC)
+    (sqrt (vector-fold
+            (lambda (idx sum x l)
+              (+ sum (/ (* x x)
+                        (* l l)
+                        )))
+            0
+            VEC
+            dim-sizes)))
+
+  (define (sgn x) (if (< 0 x) 1 -1))
+  (lambda ()
+    (define vect
+      (vector-map
+        (lambda (idx gaussg)
+          (define x (gaussg))
+          (* 1 x))
+        gaussg-vec))
+    (define norm (/ 1.0 (l2-norm vect)))
+    (vector-map (lambda (idx x)
+                  (* x norm (vector-ref dim-sizes idx)))
+                vect)))
+
+(define (make-sphere-bark* dim-sizes)
+  (define gaussg-vec
+    (vector-map
+      (lambda (idx size) (make-normal-generator 0 1 ))
+      dim-sizes))
+
+  ; Distance to ellipse.
+  (define (ellipse-norm VEC)
+    (sqrt (vector-fold
+            (lambda (idx sum x l) (+ sum (* x x l l )))
+            0
+            VEC
+            dim-sizes)))
+
+  (lambda ()
+    (define vect
+      (vector-map
+        (lambda (idx gaussg) (gaussg))
+        gaussg-vec))
+
+    (define norm (/ 1.0 (ellipse-norm vect)))
+    (vector-map
+         (lambda (idx x)
+              (define a (vector-ref dim-sizes idx))
+              (* x norm a a ))
+                vect)))
+
+(define (make-sphere-birk* dim-sizes)
   ; Banach l2-norm aka root-mean-square distance.
   (define (l2-norm VEC)
+    (sqrt (vector-fold
+            (lambda (idx sum x) (+ sum (* x x)))
+            0
+            VEC)))
+  (define gaussg-vec
+    (vector-map
+      (lambda (idx size)
+        (make-normal-generator 0.0 size ))
+      dim-sizes))
+
+  ; Distance to ellipse.
+  (define (cube-norm VEC)
+    (sqrt (vector-fold
+            (lambda (idx sum x l)
+              (+ sum (/ (* x x)
+                        (* l l )
+                        )))
+            0
+            VEC
+            dim-sizes)))
+
+  (define (ellipse-norm VEC)
     (sqrt (vector-fold
             (lambda (idx sum x l)
               (+ sum (/ (* x x)
@@ -67,12 +148,21 @@
     (define vect
       (vector-map
         (lambda (idx gaussg)
-          (gaussg))
+          (define x (gaussg))
+          (* 1 x))
         gaussg-vec))
-    (define norm (/ 1.0 (l2-norm vect)))
+    (define cnorm (/ 1.0 (cube-norm vect)))
+  (define cube-vec
     (vector-map (lambda (idx x)
-                  (* x norm))
-                vect)))
+          (define a (vector-ref dim-sizes idx))
+                  (* x cnorm (/ 1 (* a)) ))
+                vect))
+    (define norm (/ 1.0 (ellipse-norm cube-vec)))
+    (vector-map (lambda (idx x)
+          (define a (vector-ref dim-sizes idx))
+                  (* x norm  ))
+                cube-vec))
+  )
 
 ; make-ball-generator N - return a generator of points uniformly
 ; distributed inside an N-dimensional ball.
