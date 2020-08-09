@@ -164,6 +164,78 @@
                 cube-vec))
   )
 
+; -----------------------------------------------
+(define (make-sphere-drop* dim-sizes)
+  (define gaussg-vec
+    (vector-map
+      (lambda (idx size) (make-normal-generator 0 1))
+      dim-sizes))
+
+  ; Banach l2-norm
+  (define (l2-norm VEC)
+    (sqrt (vector-fold
+            (lambda (idx sum x) (+ sum (* x x)))
+            0
+            VEC)))
+
+	; Generate point on sphere
+	(define (sph)
+    (define vect 
+      (vector-map
+        (lambda (idx gaussg) (gaussg))
+        gaussg-vec))
+    (define norm (/ 1.0 (l2-norm vect)))
+    (vector-map
+         (lambda (idx x)
+              (* x norm))
+                vect))
+
+
+  ; Distance to ellipse.
+  (define (ellipse-norm VEC)
+    (sqrt (vector-fold
+            (lambda (idx sum x l)
+              (+ sum (/ (* x x)
+                        (* l l)
+                        )))
+            0
+            VEC
+            dim-sizes)))
+
+	(define vol
+    (vector-fold
+            (lambda (idx prod l) (* prod l))
+            1 dim-sizes))
+
+	(define minor
+    (vector-fold
+            (lambda (idx mino l) (if (< l mino) l mino))
+            1e60 dim-sizes))
+	(define uni (make-uniform-generator))
+
+; (format #t "maj=~A vol=~A\n" minor vol)
+  ; probability of accept
+  (define (keep VEC)
+	(define cut (* minor (ellipse-norm VEC)))
+	(define ran (uni))
+; (format #t "yo cut=~A uni=~A\n" cut ran)
+	(< ran cut))
+
+	(define (sample)
+		(define vect (sph))
+		(if (keep vect) vect (sample)))
+
+  (lambda ()
+    (define vect (sample))
+
+    (define norm (/ 1.0 (l2-norm vect)))
+    (vector-map
+         (lambda (idx x)
+              (define a (vector-ref dim-sizes idx))
+              (* x norm a ))
+                vect))
+)
+
 ; make-ball-generator N - return a generator of points uniformly
 ; distributed inside an N-dimensional ball.
 ; This implements the Harman-Lacko-Voelker Dropped Coordinate method.

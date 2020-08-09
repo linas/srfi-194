@@ -8,6 +8,9 @@
 (define (make-normal-generator center width)
 	(lambda () (+ center (* width (random:normal)))))
 
+(define (make-uniform-generator)
+	(lambda () (random:uniform)))
+
 ; Avoid heart-ache of porting to guile...
 (load "../srfi/sphere.scm")
 
@@ -160,15 +163,6 @@
 (define moving-300 (moving-avg dists 300))
 
 (list-to-file moving-300 "moving.dat")
-
-(define b (make-sphere-bark* '#(2 10)))
-(define borks (map (lambda (x) (b)) (iota 10000)))
-(define ordered-borks (clockwise borks))
-(define biffs (delta ordered-borks '()))
-(define bists (map l2-norm biffs))
-(define bork-300 (moving-avg bists 300))
-(list-to-file bork-300 "bork.dat")
-
 (define (veclist-to-file lst filename)
 	(let ((outport (open-file filename "w")))
 		(fold
@@ -178,4 +172,15 @@
 			1 lst)
 		(close outport)))
 
+
+(define b (make-sphere-drop* '#(2 10)))
+(define borks (map (lambda (x) (b)) (iota 10000)))
+(define ordered-borks (clockwise borks))
+(define biffs (delta ordered-borks '()))
+(define bists (map l2-norm biffs))
+(define bork-300 (moving-avg bists 300))
+(list-to-file bork-300 "bork.dat")
 (veclist-to-file ordered-borks "bell.dat")
+
+(define bork-300 (moving-avg bists 3000))
+(list-to-file bork-300 "bork.dat")
