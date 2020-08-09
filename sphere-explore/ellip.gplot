@@ -14,3 +14,7 @@ plot "moving.dat" using 1:2 with lines
 set out 'bork.png'
 plot "bork.dat" using 1:2 with lines
 
+set yrange [-10:10]
+set xrange [-10:10]
+set out 'bell.png'
+plot "bell.dat" using 2:3 with points

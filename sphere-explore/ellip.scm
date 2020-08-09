@@ -161,11 +161,21 @@
 
 (list-to-file moving-300 "moving.dat")
 
-(define b (make-sphere-bork* '#(10 2)))
-(define borks (map (lambda (x) (b)) (iota 10000)))
+(define b (make-sphere-bark* '#(2 10)))
+(define borks (map (lambda (x) (b)) (iota 1000)))
 (define ordered-borks (clockwise borks))
 (define biffs (delta ordered-borks '()))
 (define bists (map l2-norm biffs))
-(define bork-300 (moving-avg bists 300))
-(list-to-file bork-300 "bork.dat")
+(define bork-30 (moving-avg bists 30))
+(list-to-file bork-30 "bork.dat")
 
+(define (veclist-to-file lst filename)
+	(let ((outport (open-file filename "w")))
+		(fold
+			(lambda (x i) (format outport "~A	~A	~A\n"
+				 i (vector-ref x 0) (vector-ref x 1))
+				 (+ i 1))
+			1 lst)
+		(close outport)))
+
+(veclist-to-file ordered-borks "bell.dat")
