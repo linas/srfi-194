@@ -269,16 +269,22 @@
 
 (define CENT 100)
 (define NBINS (* 8 CENT))
+
+(define counts (do-count norm-dists CENT NBINS))
+(vector-to-file counts "counts.dat")
+
+
   ; Bin-counter containing accumulated histogram.
-  (define counts
-    (let ((bin-counts (make-vector NBINS 0)))
+(define (do-count FLST SCALE NBINS)
+    (let ((bin-counts (make-vector NBINS 0.0))
+			 (incr (/ SCALE (length FLST))))
      ; Accumulate samples into the histogram.
      (for-each
        (lambda (SAMP)
          (define off SAMP)
          (define offset (if (< off NBINS) off (- NBINS 1)))
-         (vector-set! bin-counts offset (+ 1 (vector-ref bin-counts offset))))
-       (map (lambda (x) (inexact->exact (floor (* x CENT)))) norm-dists))
+         (vector-set! bin-counts offset (+ incr (vector-ref bin-counts offset))))
+       (map (lambda (x) (inexact->exact (floor (* x SCALE)))) FLST))
      bin-counts))
 
 (define (vector-to-file vec filename)
@@ -294,4 +300,3 @@
       (iota (vector-length vec))))
   (with-output-to-file filename write-vec))
 
-(vector-to-file counts "counts.dat")
