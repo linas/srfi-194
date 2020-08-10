@@ -340,3 +340,9 @@
 	(lambda (idx del) (* del (exp (/ idx (* 2 CENT))))) bin-delta))
 (vector-to-file bin-scale "counts.dat")
 
+; hack-it
+(define offy (vector-map (lambda (idx del) (+ del 0.04)) bin-scale))
+
+(define deviations (do-count (vector->list offy) 200 25))
+(vector-to-file deviations "deviations.dat")
+

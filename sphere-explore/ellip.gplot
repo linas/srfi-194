@@ -26,8 +26,12 @@ set term png size 1024,768
 # set out 'delta-counts.png'
 # plot "counts.dat" using ($1/100):(($2 - exp (-($1/ 100))) * exp($1/200))  with lines
 
-set out 'delta-recounts.png'
-plot "counts.dat" using ($1/100):($2)  with lines
+# set out 'delta-recounts.png'
+# plot "counts.dat" using ($1/100):($2)  with lines
+
+set out 'deviations.png'
+plot "deviations.dat" using ($1/200 - 0.04):2  with lines, \
+     "deviations.dat" using ($1/200 - 0.04):(40 * exp (- (($1/200 - 0.04) * ($1/200 - 0.04) / (2 * 0.01 * 0.01) ))) with lines
 
 # set yrange [-10:10]
 # set xrange [-10:10]
