@@ -16,7 +16,9 @@ set term png size 1024,768
 
 set out 'counts.png'
 set logscale y
-plot "counts.dat" using 1:2 with lines
+set yrange [1: 120]
+plot "counts.dat" using 1:2 with lines, \
+     "counts.dat" using 1:(100 * exp (- $1 / 100)) with lines
 
 # set yrange [-10:10]
 # set xrange [-10:10]
