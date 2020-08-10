@@ -210,7 +210,8 @@
 (define (make-slicer axes thickness where)
 
 	; generator of points on n-dimensional ellipsoid
-	(define elli (make-sphere-drop* axes))
+	; (define elli (make-sphere-drop* axes))
+	(define elli (make-ellipsoid-generator axes))
 
 	; return true if point is in the slice.
 	(define (accept point)
@@ -259,6 +260,10 @@
 
 (define REPS 10000)
 (define egen (make-ellipsoid-generator* '#(2 10)))
+
+(define egen (two-d-slicer '#(4 10 16) 0.04  '#(0 0 2)))
+(define egen (two-d-slicer '#(4 10 16) 0.0005  '#(0 0 1)))
+
 (define pts (map (lambda (x) (egen)) (iota REPS)))
 (define ordered-pts (clockwise pts))
 (define diffs (delta ordered-pts '()))
