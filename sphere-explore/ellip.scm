@@ -305,3 +305,26 @@
       (iota (vector-length vec))))
   (with-output-to-file filename write-vec))
 
+
+; do the same with uniform distribution.
+(define (udelta pts rv)
+	(if (null? (cdr pts)) (reverse! rv)
+		(udelta (cdr pts) (cons (- (cadr pts) (car pts)) rv))))
+
+
+(define REPS 1000000)
+(define ugen (make-uniform-generator))
+(define pts (map (lambda (x) (ugen)) (iota REPS)))
+(define ordered-pts (sort pts <))
+
+(define dists (udelta ordered-pts '()))
+(define perimeter (sum dists))
+(define exp-dist (/ perimeter REPS))
+(define norm-dists (map (lambda (x) (/ x exp-dist)) dists))
+
+(define CENT 100)
+(define NBINS (* 8 CENT))
+
+(define counts (do-count norm-dists CENT NBINS))
+(vector-to-file counts "counts.dat")
+
