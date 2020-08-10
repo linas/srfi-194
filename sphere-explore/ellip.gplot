@@ -14,14 +14,20 @@ set term png size 1024,768
 # set out 'bork.png'
 # plot "bork.dat" using 1:2 with lines
 
-set out 'counts.png'
-set logscale y
-set yrange [:1.2]
-set title "Distribution of distances between points on ellipse"
-set xlabel "Multiple 'd' of (normalized) mean distance"
-set ylabel "Probability"
-plot "counts.dat" using ($1/100):2 with lines title "bincounts", \
-     "counts.dat" using ($1/100):(exp (-($1/ 100))) with lines title "exp(-d)"
+# set out 'counts.png'
+# set logscale y
+# set yrange [:1.2]
+# set title "Distribution of distances between points on ellipse"
+# set xlabel "Multiple 'd' of (normalized) mean distance"
+# set ylabel "Probability"
+# plot "counts.dat" using ($1/100):2 with lines title "bincounts", \
+#      "counts.dat" using ($1/100):(exp (-($1/ 100))) with lines title "exp(-d)"
+
+# set out 'delta-counts.png'
+# plot "counts.dat" using ($1/100):(($2 - exp (-($1/ 100))) * exp($1/200))  with lines
+
+set out 'delta-recounts.png'
+plot "counts.dat" using ($1/100):($2)  with lines
 
 # set yrange [-10:10]
 # set xrange [-10:10]

@@ -328,3 +328,15 @@
 (define counts (do-count norm-dists CENT NBINS))
 (vector-to-file counts "counts.dat")
 
+; Arghhh
+(vector-set! counts (- NBINS 1) 0.0)
+
+; Now bin-count the bin-counts... counts is a vector of length 800
+; normalize it and subtract expectation value. The expectation value
+; is exp (-n/CENT)
+(define bin-delta (vector-map
+	(lambda (idx cnt) (- cnt (exp (- (/ idx CENT))))) counts))
+(define bin-scale (vector-map
+	(lambda (idx del) (* del (exp (/ idx (* 2 CENT))))) bin-delta))
+(vector-to-file bin-scale "counts.dat")
+
