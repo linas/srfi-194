@@ -5,16 +5,20 @@ set term png size 1024,768
 # set logscale y
 # set logscale x
 
-set out 'dists.png'
-plot "dists.dat" using 1:2 with points
+# set out 'dists.png'
+# plot "dists.dat" using 1:2 with points
 
-set out 'moving.png'
-plot "moving.dat" using 1:2 with lines
+# set out 'moving.png'
+# plot "moving.dat" using 1:2 with lines
 
-set out 'bork.png'
-plot "bork.dat" using 1:2 with lines
+# set out 'bork.png'
+# plot "bork.dat" using 1:2 with lines
 
-set yrange [-10:10]
-set xrange [-10:10]
-set out 'bell.png'
-plot "bell.dat" using 2:3 with points
+set out 'counts.png'
+set logscale y
+plot "counts.dat" using 1:2 with lines
+
+# set yrange [-10:10]
+# set xrange [-10:10]
+# set out 'bell.png'
+# plot "bell.dat" using 2:3 with points

@@ -244,3 +244,54 @@
 		(define sample (sli))
 		(vector (vector-ref sample 0) (vector-ref sample 1))))
 
+; ---------------------------------------------------------
+
+; iota
+(define (generator->list f n)
+   (map (lambda (junk) (f)) (make-list n)))
+
+
+(define (gtake GEN N)
+   (generator->list GEN N))
+
+(define (generator-for-each LAM LST) (for-each LAM LST))
+
+
+(define REPS 10000)
+(define egen (make-ellipsoid-generator* '#(2 10)))
+(define pts (map (lambda (x) (egen)) (iota REPS)))
+(define ordered-pts (clockwise pts))
+(define diffs (delta ordered-pts '()))
+(define dists (map l2-norm diffs))
+(define perimeter (sum dists))
+(define exp-dist (/ perimeter REPS))
+(define norm-dists (map (lambda (x) (/ x exp-dist)) dists))
+
+(define CENT 100)
+(define NBINS (* 8 CENT))
+  ; Bin-counter containing accumulated histogram.
+  (define counts
+    (let ((bin-counts (make-vector NBINS 0)))
+     ; Accumulate samples into the histogram.
+     (for-each
+       (lambda (SAMP)
+         (define off SAMP)
+         (define offset (if (< off NBINS) off (- NBINS 1)))
+         (vector-set! bin-counts offset (+ 1 (vector-ref bin-counts offset))))
+       (map (lambda (x) (inexact->exact (floor (* x CENT)))) norm-dists))
+     bin-counts))
+
+(define (vector-to-file vec filename)
+  (define (write-vec)
+    (for-each
+      (lambda (i)
+        (define index (+ i 1))
+        (define val (vector-ref vec i))
+        (display index)
+        (display "  ")
+        (display val)
+        (newline))
+      (iota (vector-length vec))))
+  (with-output-to-file filename write-vec))
+
+(vector-to-file counts "counts.dat")
