@@ -7,237 +7,36 @@
 ; http://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/
 ;
 
-
 ; make-sphere-generator N - return a generator of points uniformly
 ; distributed on an N-dimensional sphere.
 ; This implements the BoxMeuller algorithm, that is, of normalizing
 ; N+1 Gaussian random variables.
 (define (make-sphere-generator arg)
   (cond
-    ((integer? arg) (make-sphere-generator* (make-vector (+ 1 arg) 1.0)))
-    ((vector? arg) (make-sphere-generator* arg))
-    (else (error "expected argument to either be a number (dimension), or vector (axis length for the dimensions)"))))
+    ((integer? arg) (make-ellipsoid-generator* (make-vector (+ 1 arg) 1.0)))
+    (else (error "expected argument to be an integer dimension"))))
 
-(define (make-sphere-generator* dim-sizes)
-  (define gaussg-vec
-    (vector-map
-      (lambda (idx size)
-        (make-normal-generator 0.0 size))
-      dim-sizes))
-  ; Banach l2-norm aka root-mean-square distance.
-  (define (l2-norm VEC)
-    (sqrt (vector-fold
-            (lambda (idx sum x l)
-              (+ sum (/ (* x x)
-                        (* l l)
-                        )))
-            0
-            VEC
-            dim-sizes)))
-
-  (lambda ()
-    (define vect
-      (vector-map
-        (lambda (idx gaussg)
-          (gaussg))
-        gaussg-vec))
-    (define norm (/ 1.0 (l2-norm vect)))
-    (vector-map (lambda (idx x)
-                  (* x norm))
-                vect)))
-
-(define (make-sphere-bork* dim-sizes)
-  ; Banach l2-norm aka root-mean-square distance.
-  (define (l2-norm VEC)
-    (sqrt (vector-fold
-            (lambda (idx sum x) (+ sum (* x x)))
-            0
-            VEC)))
-  (define gaussg-vec
-    (vector-map
-      (lambda (idx size)
-        (make-normal-generator 0.0 size ))
-      dim-sizes))
-
-  ; Distance to ellipse.
-  (define (ellipse-norm VEC)
-    (sqrt (vector-fold
-            (lambda (idx sum x l)
-              (+ sum (/ (* x x)
-                        (* l l)
-                        )))
-            0
-            VEC
-            dim-sizes)))
-
-  (define (sgn x) (if (< 0 x) 1 -1))
-  (lambda ()
-    (define vect
-      (vector-map
-        (lambda (idx gaussg)
-          (define x (gaussg))
-          (* 1 x))
-        gaussg-vec))
-    (define norm (/ 1.0 (l2-norm vect)))
-    (vector-map (lambda (idx x)
-                  (* x norm (vector-ref dim-sizes idx)))
-                vect)))
-
-(define (make-sphere-bark* dim-sizes)
-  (define gaussg-vec
-    (vector-map
-      (lambda (idx size) (make-normal-generator 0 1 ))
-      dim-sizes))
-
-  ; Distance to ellipse.
-  (define (ellipse-norm VEC)
-    (sqrt (vector-fold
-            (lambda (idx sum x l) (+ sum (* x x l l )))
-            0
-            VEC
-            dim-sizes)))
-
-  (lambda ()
-    (define vect
-      (vector-map
-        (lambda (idx gaussg) (gaussg))
-        gaussg-vec))
-
-    (define norm (/ 1.0 (ellipse-norm vect)))
-    (vector-map
-         (lambda (idx x)
-              (define a (vector-ref dim-sizes idx))
-              (* x norm a a ))
-                vect)))
-
-(define (make-sphere-birk* dim-sizes)
-  ; Banach l2-norm aka root-mean-square distance.
-  (define (l2-norm VEC)
-    (sqrt (vector-fold
-            (lambda (idx sum x) (+ sum (* x x)))
-            0
-            VEC)))
-  (define gaussg-vec
-    (vector-map
-      (lambda (idx size)
-        (make-normal-generator 0.0 size ))
-      dim-sizes))
-
-  ; Distance to ellipse.
-  (define (cube-norm VEC)
-    (sqrt (vector-fold
-            (lambda (idx sum x l)
-              (+ sum (/ (* x x)
-                        (* l l )
-                        )))
-            0
-            VEC
-            dim-sizes)))
-
-  (define (ellipse-norm VEC)
-    (sqrt (vector-fold
-            (lambda (idx sum x l)
-              (+ sum (/ (* x x)
-                        (* l l)
-                        )))
-            0
-            VEC
-            dim-sizes)))
-
-  (lambda ()
-    (define vect
-      (vector-map
-        (lambda (idx gaussg)
-          (define x (gaussg))
-          (* 1 x))
-        gaussg-vec))
-    (define cnorm (/ 1.0 (cube-norm vect)))
-  (define cube-vec
-    (vector-map (lambda (idx x)
-          (define a (vector-ref dim-sizes idx))
-                  (* x cnorm (/ 1 (* a)) ))
-                vect))
-    (define norm (/ 1.0 (ellipse-norm cube-vec)))
-    (vector-map (lambda (idx x)
-          (define a (vector-ref dim-sizes idx))
-                  (* x norm  ))
-                cube-vec))
-  )
+(define (make-ellipsoid-generator arg)
+  (cond
+    ((vector? arg) (make-ellipsoid-generator* arg))
+    (else (error "expected argument to be a vector of axis lengths"))))
 
 ; -----------------------------------------------
-(define (make-sphere-drop-exp* dim-sizes)
-  (define gaussg-vec
-    (vector-map
-      (lambda (idx size) (make-normal-generator 0 1))
-      dim-sizes))
-
-  ; Banach l2-norm
-  (define (l2-norm VEC)
-    (sqrt (vector-fold
-            (lambda (idx sum x) (+ sum (* x x)))
-            0
-            VEC)))
-
-	; Generate point on sphere
-	(define (sph)
-    (define vect 
-      (vector-map
-        (lambda (idx gaussg) (gaussg))
-        gaussg-vec))
-    (define norm (/ 1.0 (l2-norm vect)))
-    (vector-map
-         (lambda (idx x)
-              (* x norm))
-                vect))
-
-
-  ; Distance to ellipse.
-  (define (ellipse-norm VEC)
-    (sqrt (vector-fold
-            (lambda (idx sum x l)
-              (+ sum (/ (* x x)
-                        (* l l)
-                        )))
-            0
-            VEC
-            dim-sizes)))
-
-	(define vol
-    (vector-fold
-            (lambda (idx prod l) (* prod l))
-            1 dim-sizes))
-
-	(define minor
-    (vector-fold
-            (lambda (idx mino l) (if (< l mino) l mino))
-            1e60 dim-sizes))
-	(define uni (make-uniform-generator))
-
-; (format #t "maj=~A vol=~A\n" minor vol)
-  ; probability of accept
-  (define (keep VEC)
-	(define cut (* minor (ellipse-norm VEC)))
-	(define ran (uni))
-; (format #t "yo cut=~A uni=~A\n" cut ran)
-	(< ran cut))
-
-	(define (sample)
-		(define vect (sph))
-		(if (keep vect) vect (sample)))
-
-  (lambda ()
-    (define vect (sample))
-
-    (define norm (/ 1.0 (l2-norm vect)))
-    (vector-map
-         (lambda (idx x)
-              (define a (vector-ref dim-sizes idx))
-              (* x norm a ))
-                vect))
-)
-
-; -----------------------------------------------
-(define (make-sphere-drop* axes)
+; Generator of points uniformly distributed on an N-dimensional ellipsoid.
+;
+; The `axes` should be a vector of floats, specifying the axes of the
+; ellipsoid. The algorithm used is an accept/reject sampling algo,
+; wherein the acceptance rate is proportional to the measure of a
+; surface element on the ellipsoid. The measure is straight-forward to
+; arrive at, and the 3D case is described by `mercio` in detail at
+; https://math.stackexchange.com/questions/973101/how-to-generate-points-uniformly-distributed-on-the-surface-of-an-ellipsoid
+;
+; Note that sampling means that performance goes as
+; O(B/A x C/A x D/A x ...) where `A` is the shorest axis,
+; and `B`, `C`, `D`, ... are the other axes. Maximum performance
+; achieved on spheres.
+;
+(define (make-ellipsoid-generator* axes)
 
   ; A vector of normal gaussian generators
   (define gaussg-vec
@@ -246,7 +45,7 @@
   ; Banach l2-norm of a vector
   (define (l2-norm VEC)
     (sqrt (vector-fold
-            (lambda (idx sum x) (+ sum (* x x)))
+            (lambda (sum x) (+ sum (* x x)))
             0
             VEC)))
 
@@ -254,22 +53,22 @@
   (define (sph)
     ; Sample a point
     (define point
-      (vector-map (lambda (idx gaussg) (gaussg)) gaussg-vec))
+      (vector-map (lambda (gaussg) (gaussg)) gaussg-vec))
     ; Project it to the unit sphere (make it unit length)
     (define norm (/ 1.0 (l2-norm point)))
-    (vector-map (lambda (idx x) (* x norm)) point))
+    (vector-map (lambda (x) (* x norm)) point))
 
   ; Distance from origin to the surface of the
-  ; ellipsoid along direction VEC
-  (define (ellipsoid-dist VEC)
+  ; ellipsoid along direction RAY.
+  (define (ellipsoid-dist RAY)
     (sqrt (vector-fold
-            (lambda (idx sum x a) (+ sum (/ (* x x) (* a a))))
-            0 VEC axes)))
+            (lambda (sum x a) (+ sum (/ (* x x) (* a a))))
+            0 RAY axes)))
 
-  ; Find the shortest axis
+  ; Find the shortest axis.
   (define minor
     (vector-fold
-        (lambda (idx mino l) (if (< l mino) l mino))
+        (lambda (mino l) (if (< l mino) l mino))
         1e308 axes))
 
   ; Uniform generator [0,1)
@@ -288,9 +87,10 @@
   (lambda ()
   ; Find a good point, and rescale to ellipsoid.
     (vector-map
-         (lambda (idx x a) (* x a)) (sample) axes))
+         (lambda (x a) (* x a)) (sample) axes))
 )
 
+; -----------------------------------------------
 ; make-ball-generator N - return a generator of points uniformly
 ; distributed inside an N-dimensional ball.
 ; This implements the Harman-Lacko-Voelker Dropped Coordinate method.
