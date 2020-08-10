@@ -174,13 +174,73 @@
 
 
 (define b (make-sphere-drop* '#(2 10)))
-(define borks (map (lambda (x) (b)) (iota 10000)))
+(define borks (map (lambda (x) (b)) (iota 1000)))
 (define ordered-borks (clockwise borks))
 (define biffs (delta ordered-borks '()))
 (define bists (map l2-norm biffs))
-(define bork-300 (moving-avg bists 300))
+(define bork-300 (moving-avg bists 30))
 (list-to-file bork-300 "bork.dat")
 (veclist-to-file ordered-borks "bell.dat")
 
 (define bork-300 (moving-avg bists 3000))
 (list-to-file bork-300 "bork.dat")
+
+(define t (make-sphere-drop* '#(2 10 6)))
+(define first-two
+	(lambda () 
+		(define (try)
+			(define samp (t))
+			(if (and (< (vector-ref samp 2) 0.1) (< -0.1 (vector-ref samp 2)))
+				(vector (vector-ref samp 0) (vector-ref samp 1))
+				(try)))
+		(try)))
+
+
+; Take a two-2d slice out of ellipsoidhaving `axes`. Thickness of the
+; slice is `thickness`. Location of the slice is `where`.  Caution:
+; may be extremely slow if a high-dimenional vector is given, or if
+; thickness is too thin. Will infinite-loop if `where` is not inside
+; the ellipsiod.  Returns an n-dimensional point, of which the first
+; two coords are unconstrained.
+; 
+; Usage:
+;
+; (define gen (make-slicer '#(2 10 6 4) 0.1  '#(0 0 2 1)))
+; (gen)
+(define (make-slicer axes thickness where)
+
+	; generator of points on n-dimensional ellipsoid
+	(define elli (make-sphere-drop* axes))
+
+	; return true if point is in the slice.
+	(define (accept point)
+
+		;; take the slice off-center
+		(define diff
+			(vector-map (lambda (idx r s) (- r s)) point where))
+
+		;; return #t if the point is in the slice
+		(define (ok vec)
+			(vector-fold (lambda (idx pass coord)
+				(or (< idx 2)
+					(and pass (< (- 0 thickness) coord) (< coord thickness))))
+				#t vec))
+
+		; test
+		(ok diff))
+
+	(define (try)
+		(define sample (elli))
+		(if (accept sample) sample (try)))
+
+	; return the looper
+	try)
+
+; Like above but return 2D point only.
+(define (two-d-slicer axes thickness where)
+	(define sli (make-slicer axes thickness where))
+
+	(lambda ()
+		(define sample (sli))
+		(vector (vector-ref sample 0) (vector-ref sample 1))))
+
