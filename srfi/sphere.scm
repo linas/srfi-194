@@ -239,9 +239,9 @@
 ; -----------------------------------------------
 (define (make-sphere-drop* axes)
 
-	; A vector of normal gaussian generators
-	(define gaussg-vec
-		(make-vector (vector-length axes) (make-normal-generator 0 1)))
+  ; A vector of normal gaussian generators
+  (define gaussg-vec
+    (make-vector (vector-length axes) (make-normal-generator 0 1)))
 
   ; Banach l2-norm of a vector
   (define (l2-norm VEC)
@@ -250,12 +250,12 @@
             0
             VEC)))
 
-	; Generate one point on a sphere
-	(define (sph)
-		; Sample a point
+  ; Generate one point on a sphere
+  (define (sph)
+    ; Sample a point
     (define point
       (vector-map (lambda (idx gaussg) (gaussg)) gaussg-vec))
-		; project it to the unit sphere
+    ; Project it to the unit sphere (make it unit length)
     (define norm (/ 1.0 (l2-norm point)))
     (vector-map (lambda (idx x) (* x norm)) point))
 
@@ -264,33 +264,31 @@
   (define (ellipsoid-dist VEC)
     (sqrt (vector-fold
             (lambda (idx sum x a) (+ sum (/ (* x x) (* a a))))
-            0
-            VEC
-            axes)))
+            0 VEC axes)))
 
-	; Find the shortest axis
-	(define minor
+  ; Find the shortest axis
+  (define minor
     (vector-fold
-            (lambda (idx mino l) (if (< l mino) l mino))
-            1e308 axes))
+        (lambda (idx mino l) (if (< l mino) l mino))
+        1e308 axes))
 
-	; uniform generator
-	(define uni (make-uniform-generator))
+  ; Uniform generator [0,1)
+  (define uni (make-uniform-generator))
 
   ; Return #t if the POINT can be kept; else must resample.
   (define (keep POINT)
-	(< (uni) (* minor (ellipsoid-dist POINT))))
+    (< (uni) (* minor (ellipsoid-dist POINT))))
 
-	; Sample once. The returned sample is a point on a sphere
-	; of unit radius (we already normed up above).
-	(define (sample)
-		(define vect (sph))
-		(if (keep vect) vect (sample)))
+  ; Sample until a good point is found. The returned sample is a
+  ; vector of unit length (we already normed up above).
+  (define (sample)
+    (define vect (sph))
+    (if (keep vect) vect (sample)))
 
   (lambda ()
-	; Rescale to ellipsoid.
+  ; Find a good point, and rescale to ellipsoid.
     (vector-map
-         (lambda (idx x a) (* x a )) (sample) axes))
+         (lambda (idx x a) (* x a)) (sample) axes))
 )
 
 ; make-ball-generator N - return a generator of points uniformly
